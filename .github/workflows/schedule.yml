@@ -2,9 +2,9 @@ name: Schedule Script
 
 on:
   schedule:
-    - cron: '55 6 * * *'  # 每天7点执行
+    - cron: '58 6 * * *'  # 每天7点执行
   # 如果您希望在推送或拉取请求时也执行，可以添加如下内容
-  push:
+  # push:
   # pull_request:
 
 jobs:
