@@ -23,6 +23,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Set up Chrome
+      uses: browser-actions/setup-chrome@latest
+      with:
+        chrome-version: stable
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
