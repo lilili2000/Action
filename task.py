@@ -41,7 +41,6 @@ class AutoReservation:
         self.password = password
         #设置为两天后
         self.reservation_date = datetime.datetime.strptime(reservation_date, "%Y-%m-%d") + datetime.timedelta(days=2)
-        self.reservation_date = reservation_date
         self.reservation_time = reservation_time
         self.reservation_arena = reservation_arena
         self.refresh_count = 5
