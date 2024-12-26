@@ -8,8 +8,8 @@ echo Starting service...
 
 :: Step 2: 执行 main.py，根据参数进行并发预定
 :: 设置变量
-set username=%USERNAME%
-set password=%PASSWORD%
+set username=24210240085
+set password=U202012152lqx.
 set arena=张江校区网球场
 ::set date=<YYYY-MM-DD>
 :: Step 2: 计算两天后的日期，使用 PowerShell 获取

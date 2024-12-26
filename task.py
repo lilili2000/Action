@@ -77,6 +77,7 @@ class AutoReservation:
             )
         ).click()
         # 等待统一登录页面的用户名、密码和登录按钮显示出来
+        
         self.wait.until(
             ExpectedCond.presence_of_element_located(
                 (
@@ -186,7 +187,8 @@ class AutoReservation:
                     except:
                         raise Exception("跳转日期失败，刷新页面")
                     hoveredDate = self.driver.find_element(by=By.XPATH, value='//li[contains(@class, "hover")]').find_element(by=By.TAG_NAME, value='input').get_dom_attribute("value")
-                    if hoveredDate == self.reservation_date:
+                    targetday = self.reservation_date.strftime("%Y-%m-%d")
+                    if hoveredDate == targetday:
                         break       
             except:
                 self.refresh_count -= 1
