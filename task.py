@@ -13,8 +13,6 @@ from selenium.webdriver.support import expected_conditions as ExpectedCond
 from time import sleep
 import datetime
 
-from src.captcha import TextSelectCaptcha
-
 
 import requests
 
