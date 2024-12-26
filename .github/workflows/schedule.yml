@@ -26,4 +26,4 @@ jobs:
         pip install -r requirements.txt  # 如果有依赖，确保您在仓库中添加了requirements.txt文件
 
     - name: Run the script
-      run: python task.py --username 24210240085 --password U202012152lqx. --reservation-arena 江湾体育馆羽毛球场  --reservation-time 09:00 # 替换为您的脚本名称
+      run: python task.py --username 24210240085 --password U202012152lqx. --reservation-arena 张江校区网球场  --reservation-time 09:00 # 替换为您的脚本名称
