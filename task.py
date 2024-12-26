@@ -5,8 +5,9 @@ import json
 import smtplib
 import time
 from PIL import Image
-from selenium.webdriver.edge.webdriver import WebDriver
-
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -29,13 +30,11 @@ class AutoReservation:
             reservation_arena: str,
             **kwargs
     ):
-        self.driver: WebDriver = WebDriver(
-            options=kwargs.get("webdriver_options"),
-            service=kwargs.get("webdriver_service")
-        )
-        self.driver.options.add_argument("--headless")
-        self.driver.options.add_argument("--no-sandbox")
-        self.driver.options.add_argument("--disable-dev-shm-usage")
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # 启用无头模式
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        self.driver: WebDriver = WebDriver.Chrome(service=ChromeService(), options=chrome_options)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
             timeout=3
