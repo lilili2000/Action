@@ -248,10 +248,22 @@ class AutoReservation:
             
             target = self.driver.find_element(By.CLASS_NAME,"valid_tips__text")
             move = ActionChains(self.driver)
+
+            img_block_size = img_block.size
+            img_block_width = img_block_size['width']
+            img_block_height = img_block_size['height']
+
             try:
                 for i in target.text[6:10]:
-                    print(recogResults[i]['X坐标值'], recogResults[i]['Y坐标值'])
-                    move.move_to_element(img_block).move_by_offset(-160 + recogResults[i]['X坐标值'], -80 + recogResults[i]['Y坐标值'] ).click().perform()
+                    x_offset = recogResults[i]['X坐标值']
+                    y_offset = recogResults[i]['Y坐标值']
+                    print(f"Clicking at: {x_offset}, {y_offset}")
+
+                    # 点击时计算偏移量
+                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)-15).click().perform()
+
+                    # print(recogResults[i]['X坐标值'], recogResults[i]['Y坐标值'])
+                    # move.move_to_element(img_block).move_by_offset(-160 + recogResults[i]['X坐标值'], -80 + recogResults[i]['Y坐标值'] ).click().perform()
             except:
                 pass
             
