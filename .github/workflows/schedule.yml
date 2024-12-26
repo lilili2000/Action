@@ -28,6 +28,10 @@ jobs:
       with:
         chrome-version: stable
 
+    - name: run Chrome
+      run: |
+        google-chrome --version
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
