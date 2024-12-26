@@ -6,6 +6,7 @@ import smtplib
 import time
 from PIL import Image
 from selenium.webdriver.edge.webdriver import WebDriver
+
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -32,6 +33,9 @@ class AutoReservation:
             options=kwargs.get("webdriver_options"),
             service=kwargs.get("webdriver_service")
         )
+        self.driver.options.add_argument("--headless")
+        self.driver.options.add_argument("--no-sandbox")
+        self.driver.options.add_argument("--disable-dev-shm-usage")
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
             timeout=3
