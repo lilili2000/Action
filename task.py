@@ -36,10 +36,12 @@ class AutoReservation:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         self.driver: WebDriver = webdriver.Chrome(service=ChromeService(), options=chrome_options)
+        self.driver.set_window_size(1920, 1080)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
             timeout=3
         )
+
         self.action_chains = ActionChains(self.driver)
         self.username = username
         self.password = password
