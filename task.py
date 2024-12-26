@@ -5,6 +5,7 @@ import json
 import smtplib
 import time
 from PIL import Image
+from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -34,7 +35,7 @@ class AutoReservation:
         chrome_options.add_argument("--headless")  # 启用无头模式
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.driver: WebDriver = WebDriver.Chrome(service=ChromeService(), options=chrome_options)
+        self.driver: WebDriver = webdriver.Chrome(service=ChromeService(), options=chrome_options)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
             timeout=3
