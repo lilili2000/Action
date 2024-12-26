@@ -32,7 +32,7 @@ class AutoReservation:
             **kwargs
     ):
         chrome_options = Options()
-        #chrome_options.add_argument("--headless")  # 启用无头模式
+        chrome_options.add_argument("--headless")  # 启用无头模式
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         self.driver: WebDriver = webdriver.Chrome(service=ChromeService(), options=chrome_options)
@@ -293,7 +293,7 @@ class AutoReservation:
                 if self.img_refresh_count > 0:
                     self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
                     sleep(1)
-                    self.refresh_count -= 1
+                    self.img_refresh_count -= 1
                 else:
                     return
 
