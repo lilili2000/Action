@@ -27,6 +27,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt  # 如果有依赖，确保您在仓库中添加了requirements.txt文件
 
-    - name: Run the script
+    - name: Reserve the first arena
       run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 江湾体育馆羽毛球场  --reservation-time 15:00
+
+    -name: Reserve the second arena 
       run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 江湾体育馆羽毛球场  --reservation-time 16:00
