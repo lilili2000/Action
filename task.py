@@ -16,7 +16,7 @@ import datetime
 
 import requests
 
-
+res_date = datetime.datetime.now() + datetime.timedelta(days=2)
 
 class AutoReservation:
     def __init__(
@@ -40,7 +40,7 @@ class AutoReservation:
         self.username = username
         self.password = password
         #设置为两天后
-        self.reservation_date = datetime.datetime.strptime(reservation_date, "%Y-%m-%d") + datetime.timedelta(days=2)
+        self.reservation_date = res_date
         self.reservation_time = reservation_time
         self.reservation_arena = reservation_arena
         self.refresh_count = 5
@@ -267,9 +267,8 @@ class AutoReservation:
                 submitBtn = self.driver.find_element(By.ID,'btn_sub')
                 submitBtn.click()
                 self.driver.switch_to.alert.accept()
-                
-                print("{}_{} reservation success".format(ar.reservation_date, ar.reservation_time))
-                self.res_msg("Subject:{}_{} reservation success".format(ar.reservation_date, ar.reservation_time))
+                print("{}_{} reservation success".format(res_date, ar.reservation_time))
+                self.res_msg("Subject:{}_{} reservation success".format(res_date, ar.reservation_time))
                 break
             else:
                 # 刷新验证码
@@ -320,7 +319,7 @@ if __name__ == "__main__":
     ar = AutoReservation(
         args.username,
         args.password,
-        args.reservation_date,
+        #args.reservation_date,
         args.reservation_time,
         args.reservation_arena
     )
