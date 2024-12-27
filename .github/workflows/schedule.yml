@@ -2,7 +2,7 @@ name: Schedule Script
 
 on:
   schedule:
-    - cron: '54 8 * * *'  # 每天7点执行
+    - cron: '00 1 * * *'  # 每天7点执行
   # push:
   # pull_request:
 
