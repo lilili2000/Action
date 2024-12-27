@@ -32,7 +32,7 @@ class AutoReservation:
             **kwargs
     ):
         chrome_options = Options()
-        #chrome_options.add_argument("--headless")  # 启用无头模式
+        chrome_options.add_argument("--headless")  # 启用无头模式
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         self.driver: WebDriver = webdriver.Chrome(service=ChromeService(), options=chrome_options)
@@ -180,7 +180,7 @@ class AutoReservation:
                 while True:
                     try:
                         # 如果当前时间早于7:00则等到7:00
-                        if time.strftime("%H:%M", time.localtime()) < '21:48':
+                        if time.strftime("%H:%M", time.localtime()) < '7:00':
                             time.sleep(1)
                             continue
                         self.driver.execute_script("""
