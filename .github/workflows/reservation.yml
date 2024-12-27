@@ -1,8 +1,12 @@
-name: Schedule Script
+name: Reservation
 
 on:
-  schedule:
-  - cron: '*/5 * * * *'  # 每天7点执行
+  # 定时触发
+  workflow_dispatch:
+  # schedule:
+  # - cron: '53 * * * *'  # 每天7点执行
+  # push:
+  # pull_request:
 
 jobs:
   run-script:
