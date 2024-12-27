@@ -2,7 +2,8 @@ name: Schedule Script
 
 on:
   schedule:
-    - cron: '2 1 * * *'  # 每天7点执行
+    - cron: '6 1 * * *'  # 每天7点执行
+  workflow_dispatch:
   # push:
   # pull_request:
 
