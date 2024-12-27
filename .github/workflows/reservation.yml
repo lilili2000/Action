@@ -4,7 +4,7 @@ on:
   # 定时触发
   workflow_dispatch:
   schedule:
-    - cron: '2 * * * *'  # 每天7点执行
+  - cron: '2 * * * *'  # 每天7点执行
   # push:
   # pull_request:
 
