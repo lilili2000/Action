@@ -180,7 +180,8 @@ class AutoReservation:
                 while True:
                     try:
                         # 如果当前时间早于7:00则等到7:00
-                        if time.strftime("%H:%M", time.localtime()) < '7:00':
+                        tmp_time = time.strftime("%H:%M", time.localtime())
+                        if time.strftime("%H:%M", time.localtime()) < '07:00':
                             time.sleep(1)
                             continue
                         self.driver.execute_script("""
@@ -231,6 +232,7 @@ class AutoReservation:
                 if self.refresh_count < 0:
                     return
                 self.driver.refresh()
+                
 
 
     def pass_verification(self):
