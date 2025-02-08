@@ -15,6 +15,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ExpectedCond
 from time import sleep
 import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 import requests
@@ -79,7 +81,15 @@ class AutoReservation:
 
 
     def login(self):
-        self.res_msg("Subject:login")
+        # 创建邮件
+        msg = MIMEMultipart()
+        msg["Subject"] = "羽毛球场地预约开始"
+
+        # 邮件正文
+        body = "登录成功, 开始预约"+self.reservation_arena+"，预约时间为"+self.reservation_time
+        msg.attach(MIMEText(body, "plain"))
+
+        self.res_msg(msg.as_string())
         # 访问登录页面，点击”校内登录“按钮，等待页面跳转
         self.driver.get(r'https://elife.fudan.edu.cn/login.jsp')
         self.wait.until(
@@ -300,9 +310,19 @@ class AutoReservation:
             if isValidPopupClosed and isVerifyResultShowed:
                 submitBtn = self.driver.find_element(By.ID,'btn_sub')
                 submitBtn.click()
-                self.driver.switch_to.alert.accept()
+                # 如果有alert弹窗，点击确定
+                if self.wait.until(ExpectedCond.alert_is_present()):
+                    self.driver.switch_to.alert.accept()
+
                 print("{}_{} reservation success".format(res_date, ar.reservation_time))
-                self.res_msg("Subject:{}_{} reservation success".format(res_date, ar.reservation_time))
+                # 创建邮件
+                msg = MIMEMultipart()
+                msg["Subject"] = "场地预约成功"
+
+                # 邮件正文
+                body = "成功预约{}，时间为{}".format(self.reservation_arena, self.reservation_time)
+                msg.attach(MIMEText(body, "plain"))
+                self.res_msg(msg.as_string())
                 break
             else:
                 # 刷新验证码
