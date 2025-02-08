@@ -29,6 +29,12 @@ class AutoReservation:
 
             reservation_time: str,
             reservation_arena: str,
+
+            capcha_username: str = None,
+            capcha_password: str = None,
+            receive_email: str = None,
+            send_email: str = None,
+            send_email_key: str = None,
             **kwargs
     ):
         chrome_options = Options()
@@ -51,6 +57,12 @@ class AutoReservation:
         self.reservation_arena = reservation_arena
         self.refresh_count = 5
         self.img_refresh_count = 10
+
+        self.capcha_username = capcha_username
+        self.capcha_password = capcha_password
+        self.receive_email = receive_email
+        self.send_email = send_email
+        self.send_email_key = send_email_key
 
     def wait_for_element(self, by, value):
         try:
@@ -308,8 +320,8 @@ class AutoReservation:
 
     def pass_capcha(self, image):
         sleep(1)
-        data = {"username": 'feeling2024', 
-        "password": '12345678', 
+        data = {"username": self.capcha_username, 
+        "password": self.capcha_password, 
         "ID": '73413759', 
         "b64": image, 
         "version": "3.1.1"}
@@ -319,9 +331,9 @@ class AutoReservation:
         return result
 
     def res_msg(self, message):
-        EMAILS = ["1063870403@qq.com"]  # Receive error notifications by email
-        YOUR_EMAIL = "17689375885@163.com"  # Account to send email from
-        EMAIL_PASSWORD = "HATCAIWZLGETFXJU"  # Password for the email account
+        EMAILS = [self.receive_email]  # Receive error notifications by email
+        YOUR_EMAIL = self.send_email # Account to send email from
+        EMAIL_PASSWORD = self.send_email_key  # Password for the email account
         connection = smtplib.SMTP_SSL("smtp.163.com", 465)
         try:
             connection.ehlo()
@@ -337,13 +349,23 @@ if __name__ == "__main__":
     #parser.add_argument("--reservation-date", type=str, help="预约日期，形式为yyyy-mm-dd")
     parser.add_argument("--reservation-time", type=str, help="预约时间段，形式为hh:mm")
     parser.add_argument("--reservation-arena", type=str, help="预约场地")
+    parser.add_argument("--capcha-username", type=str, help="验证码识别服务用户名")
+    parser.add_argument("--capcha-password", type=str, help="验证码识别服务密码")
+    parser.add_argument("--receive-email", type=str, help="接收邮件地址")
+    parser.add_argument("--send-email", type=str, help="发送邮件地址")
+    parser.add_argument("--send-email-key", type=str, help="发送邮件密钥")
     args = parser.parse_args()
     ar = AutoReservation(
         args.username,
         args.password,
         #args.reservation_date,
         args.reservation_time,
-        args.reservation_arena
+        args.reservation_arena,
+        args.capcha_username,
+        args.capcha_password,
+        args.receive_email,
+        args.send_email,
+        args.send_email_key
     )
     try:
         ar.login()
