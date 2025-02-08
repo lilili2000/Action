@@ -352,8 +352,8 @@ if __name__ == "__main__":
     parser.add_argument("--capcha-username", type=str, help="验证码识别服务用户名")
     parser.add_argument("--capcha-password", type=str, help="验证码识别服务密码")
     parser.add_argument("--receive-email", type=str, help="接收邮件地址")
-    parser.add_argument("--send-email", type=str, help="发送邮件地址")
     parser.add_argument("--send-email-key", type=str, help="发送邮件密钥")
+    parser.add_argument("--send-email", type=str, help="发送邮件地址")
     args = parser.parse_args()
     ar = AutoReservation(
         args.username,
