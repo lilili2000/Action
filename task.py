@@ -310,9 +310,9 @@ class AutoReservation:
             if isValidPopupClosed and isVerifyResultShowed:
                 submitBtn = self.driver.find_element(By.ID,'btn_sub')
                 submitBtn.click()
-                # 如果有alert弹窗，点击确定
-                if self.wait.until(ExpectedCond.alert_is_present()):
-                    self.driver.switch_to.alert.accept()
+                # # 如果有alert弹窗，点击确定
+                # if self.wait.until(ExpectedCond.alert_is_present()):
+                #     self.driver.switch_to.alert.accept()
 
                 print("{}_{} reservation success".format(res_date, ar.reservation_time))
                 # 创建邮件
