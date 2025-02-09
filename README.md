@@ -9,6 +9,15 @@
 - `CAPCHA_PASSWORD`：打码平台的密码
 # 2. 配置触发器
 github本身的定时任务不知道为啥不会自动触发，所以借助云函数实现定时触发。
+下面2选1
+## cron-job.rog(推荐)
+[注册并创建任务](https://console.cron-job.org)
+下面网址修改为自己仓库对应的
+![alt text](image-2.png)
+**键和值参考下面腾讯云函数** **Authorization部分**， 以"token "开头，后面跟着自己的github token， 可以在 **点击头像**`Settings->Developer settings->Personal access tokens`中生成
+![alt text](image-3.png)
+![alt text](image-4.png)
+## 腾讯云函数
 - 注册[腾讯云](URL_ADDRESS- 注册[腾讯云](https://cloud.tencent.com/)
 
 - 进入[云函数](URL_ADDRESS- 进入[云函数](https://console.cloud.tencent.com/scf/list?rid=1&ns=default)
@@ -16,7 +25,7 @@ github本身的定时任务不知道为啥不会自动触发，所以借助云�
 - 创建函数
 ![alt text](image.png)
 
-- 函数内容 **填充Authorization部分**， 以"token "开头，后面跟着自己的github token， 可以在 ==点击头像==`Settings->Developer settings->Personal access tokens`中生成，**然后后面的请求地址改成自己的仓库地址对应的**
+- 函数内容 **填充Authorization部分**， 以"token "开头，后面跟着自己的github token， 可以在 **点击头像**`Settings->Developer settings->Personal access tokens`中生成，**然后后面的请求地址改成自己的仓库地址对应的**
 ```py
 import requests
 import json
