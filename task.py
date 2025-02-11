@@ -283,7 +283,7 @@ class AutoReservation:
                 for i in target.text[6:10]:
                     x_offset = recogResults[i]['X坐标值']
                     y_offset = recogResults[i]['Y坐标值']
-                    print(f"Clicking at: {x_offset}, {y_offset}")
+                    # print(f"Clicking at: {x_offset}, {y_offset}")
 
                     # 点击时计算偏移量
                     move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)-15).click().perform()
