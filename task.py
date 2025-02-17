@@ -202,19 +202,52 @@ class AutoReservation:
                 while True:
                     try:
                         # 如果当前时间早于7:00则等到7:00
-                        tmp_time = time.strftime("%H:%M", time.localtime())
+                        # tmp_time = time.strftime("%H:%M", time.localtime())
                         if time.strftime("%H:%M", time.localtime()) < '07:00':
                             time.sleep(1)
                             continue
                         self.driver.execute_script("""
                             goToDate('{}')
                         """.format(self.reservation_date))
+                        print("跳转日期成功："+time.strftime("%Y-%m-%d", time.localtime()))
                     except:
                         raise Exception("跳转日期失败，刷新页面")
                     hoveredDate = self.driver.find_element(by=By.XPATH, value='//li[contains(@class, "hover")]').find_element(by=By.TAG_NAME, value='input').get_dom_attribute("value")
                     targetday = self.reservation_date.strftime("%Y-%m-%d")
                     if hoveredDate == targetday:
                         break       
+
+                sleep(0.2)
+            
+                # 查找预约时间，判断是否可以预约
+                reservationBtn = self.driver.find_element(
+                    by=By.XPATH,
+                    value='//font[contains(text(), "{}")]'.format(self.reservation_time)
+                ).find_element(
+                    By.XPATH,
+                    value='../../td[contains(@align, "right")]//img')
+                # 判断reservationBtn是否有onClick属性
+                if reservationBtn.get_dom_attribute('onClick'):
+                    # 可以预约
+                    reservationBtn.click()
+                    # 进入预约验证页面点击verify_button1
+                    verifyBtn = self.wait.until(
+                        ExpectedCond.element_to_be_clickable((By.ID, 'verify_button1'))
+                    )
+                    verifyBtn.click()
+                    # 等待直到valid_bg-img加载完成，从图片的src属性获取图片的base64编码
+                    self.wait.until(
+                        ExpectedCond.visibility_of_element_located((By.CLASS_NAME, 'valid_bg-img'))
+                    )
+                    break
+                else:
+                    # 不能预约，一秒钟刷新一次
+                    #raise Exception("场地：{}，日期：{}，时间：{}，无法预约".format(self.reservation_arena, self.reservation_date, self.reservation_time))
+                    sleep(1)
+                    self.refresh_count -= 1
+                    if self.refresh_count < 0:
+                        return
+                    self.driver.refresh()
             except:
                 self.refresh_count -= 1
                 if self.refresh_count <= 0:
@@ -222,38 +255,6 @@ class AutoReservation:
                 tempDriver.refresh()
                 self.driver = tempDriver
                 continue
-            sleep(1)
-            
-            # 查找预约时间，判断是否可以预约
-            reservationBtn = self.driver.find_element(
-                by=By.XPATH,
-                value='//font[contains(text(), "{}")]'.format(self.reservation_time)
-            ).find_element(
-                By.XPATH,
-                value='../../td[contains(@align, "right")]//img')
-            # 判断reservationBtn是否有onClick属性
-            if reservationBtn.get_dom_attribute('onClick'):
-                # 可以预约
-                reservationBtn.click()
-                # 进入预约验证页面点击verify_button1
-                verifyBtn = self.wait.until(
-                    ExpectedCond.element_to_be_clickable((By.ID, 'verify_button1'))
-                )
-                sleep(1)
-                verifyBtn.click()
-                # 等待直到valid_bg-img加载完成，从图片的src属性获取图片的base64编码
-                self.wait.until(
-                    ExpectedCond.visibility_of_element_located((By.CLASS_NAME, 'valid_bg-img'))
-                )
-                break
-            else:
-                # 不能预约，一秒钟刷新一次
-                #raise Exception("场地：{}，日期：{}，时间：{}，无法预约".format(self.reservation_arena, self.reservation_date, self.reservation_time))
-                sleep(1)
-                self.refresh_count -= 1
-                if self.refresh_count < 0:
-                    return
-                self.driver.refresh()
                 
 
 
