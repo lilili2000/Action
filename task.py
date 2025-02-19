@@ -47,7 +47,7 @@ class AutoReservation:
         self.driver.set_window_size(1920, 1080)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
-            timeout=10,
+            timeout=5,
         )
 
         self.action_chains = ActionChains(self.driver)
@@ -232,14 +232,17 @@ class AutoReservation:
                     reservationBtn.click()
                     # 进入预约验证页面点击verify_button1
                     verifyBtn = self.wait.until(
-                        ExpectedCond.element_to_be_clickable((By.ID, 'verify_button1'))
+                        ExpectedCond.element_to_be_clickable((By.ID, 'verify_button1')),
+                        message="预约页面加载超时"
                     )
                     verifyBtn.click()
                     # 等待直到valid_bg-img加载完成，从图片的src属性获取图片的base64编码
                     # 等待一分钟，如果一分钟内没有加载完成则刷新页面
                     self.wait.until(
-                        ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img'))
+                        ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img')),
+                        message="验证码图片加载超时"
                     )
+                    sleep(0.5)
                     break
                 else:
                     # 不能预约，一秒钟刷新一次
@@ -250,6 +253,7 @@ class AutoReservation:
                         return
                     self.driver.refresh()
             except:
+                
                 self.refresh_count -= 1
                 if self.refresh_count <= 0:
                     return
@@ -269,7 +273,8 @@ class AutoReservation:
             img_block = self.driver.find_element(
                 By.CLASS_NAME, 'valid_bg-img'
             )
-            verifyPic_base64 = img_block.get_dom_attribute('src').replace('data:image/jpg;base64,', '')
+            src = img_block.get_dom_attribute('src')
+            verifyPic_base64 = src.replace('data:image/jpg;base64,', '')
 
             # recogResults: list = nn_service_request.nn_service_request(verifyPicWithCharTarget_base64)
             recogResults = self.pass_capcha(verifyPic_base64)
