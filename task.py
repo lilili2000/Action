@@ -47,7 +47,7 @@ class AutoReservation:
         self.driver.set_window_size(1920, 1080)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
-            timeout=3
+            timeout=10,
         )
 
         self.action_chains = ActionChains(self.driver)
@@ -236,8 +236,9 @@ class AutoReservation:
                     )
                     verifyBtn.click()
                     # 等待直到valid_bg-img加载完成，从图片的src属性获取图片的base64编码
+                    # 等待一分钟，如果一分钟内没有加载完成则刷新页面
                     self.wait.until(
-                        ExpectedCond.visibility_of_element_located((By.CLASS_NAME, 'valid_bg-img'))
+                        ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img'))
                     )
                     break
                 else:
