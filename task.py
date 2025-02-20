@@ -270,6 +270,10 @@ class AutoReservation:
         # 直到识别成功
 
         while True:
+            self.wait.until(
+                ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img')),
+                message="验证码图片加载超时",
+            )
             img_block = self.driver.find_element(
                 By.CLASS_NAME, 'valid_bg-img'
             )
@@ -334,6 +338,7 @@ class AutoReservation:
             else:
                 # 刷新验证码
                 if self.img_refresh_count > 0:
+                    print("刷新验证码")
                     self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
                     sleep(1)
                     self.img_refresh_count -= 1
