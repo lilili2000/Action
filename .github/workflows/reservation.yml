@@ -32,7 +32,7 @@ jobs:
         timezoneLinux: "Asia/Shanghai"
 
     - name: Run the script
-      run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 江湾体育馆羽毛球场  --reservation-time 17:00 --capcha-username ${{secrets.CAPCHA_USERNAME}} --capcha-password ${{secrets.CAPCHA_PASSWORD}} --receive-email ${{secrets.RECEIVE_EMAIL}} --send-email ${{secrets.SEND_EMAIL}} --send-email-key ${{secrets.SEND_EMAIL_KEY}}
+      run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 张江校区网球场  --reservation-time 10:00 --capcha-username ${{secrets.CAPCHA_USERNAME}} --capcha-password ${{secrets.CAPCHA_PASSWORD}} --receive-email ${{secrets.RECEIVE_EMAIL}} --send-email ${{secrets.SEND_EMAIL}} --send-email-key ${{secrets.SEND_EMAIL_KEY}}
 
   run-second-script:
     runs-on: ubuntu-latest
@@ -57,4 +57,4 @@ jobs:
         timezoneLinux: "Asia/Shanghai"
 
     - name: Run the script
-      run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 江湾体育馆羽毛球场  --reservation-time 16:00 --capcha-username ${{secrets.CAPCHA_USERNAME}} --capcha-password ${{secrets.CAPCHA_PASSWORD}} --receive-email ${{secrets.RECEIVE_EMAIL}} --send-email ${{secrets.SEND_EMAIL}} --send-email-key ${{secrets.SEND_EMAIL_KEY}}
+      run: python task.py --username ${{secrets.USERNAME}} --password ${{secrets.PASSWORD}} --reservation-arena 张江校区网球场  --reservation-time 11:00 --capcha-username ${{secrets.CAPCHA_USERNAME}} --capcha-password ${{secrets.CAPCHA_PASSWORD}} --receive-email ${{secrets.RECEIVE_EMAIL}} --send-email ${{secrets.SEND_EMAIL}} --send-email-key ${{secrets.SEND_EMAIL_KEY}}
