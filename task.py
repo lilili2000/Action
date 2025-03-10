@@ -85,6 +85,7 @@ class AutoReservation:
             if self.refresh_count < 0:
                 raise Exception("刷新次数过多，请检查网络连接")
             self.driver.refresh()
+            sleep(0.5)
             return self.wait_for_element(by, value)  # 递归调用，继续等待元素
 
 
@@ -152,7 +153,7 @@ class AutoReservation:
                 By.XPATH,
                 '//ul[@class="ydfw_r_content"]//li[1]//a[1]'
         ).click()
-        time.sleep(1)
+        time.sleep(0.5)
         self.driver.switch_to.window(self.driver.window_handles[-1])
 
         # 选择场馆，场馆列表使用iframe标签内嵌了一个网页，要切换frame
@@ -173,7 +174,7 @@ class AutoReservation:
                 if self.refresh_count <= 0:
                     return
                 self.driver.refresh()
-                sleep(1)
+                sleep(0.5)
 
         while True:
             try:
@@ -191,10 +192,10 @@ class AutoReservation:
                 if self.refresh_count <= 0:
                     return
                 self.driver.refresh()
-                sleep(1)
+                sleep(0.5)
 
         # 点击预约，页面跳转
-        time.sleep(1)
+        time.sleep(0.5)
         self.driver.switch_to.window(self.driver.window_handles[-1])
         self.wait.until(
             ExpectedCond.element_to_be_clickable(
@@ -269,7 +270,7 @@ class AutoReservation:
                 # 判断reservationBtn是否有onClick属性
                 if reservationBtn.get_dom_attribute('onClick'):
                     # 可以预约
-                    sleep(0.5)
+                    sleep(0.3)
                     reservationBtn.click()
                     print_with_time("进入预约时间")
                     # 进入预约验证页面点击verify_button1
@@ -278,20 +279,16 @@ class AutoReservation:
                         message="预约页面加载超时"
                     )
                     verifyBtn.click()
-                    print_with_time("点击验证码获取")
-                    # 等待直到valid_bg-img加载完成，从图片的src属性获取图片的base64编码
-                    # 等待一分钟，如果一分钟内没有加载完成则刷新页面
-                    self.wait.until(
-                        ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img')),
-                        message="验证码图片加载超时1"
-                    )
                     sleep(0.5)
+                    WebDriverWait(self.driver, 2).until(
+                        ExpectedCond.presence_of_all_elements_located((By.CLASS_NAME, 'valid_bg-img')),
+                        message="验证码图片加载超时1",
+                    )
                     break
                 else:
                     # 不能预约，一秒钟刷新一次
                     #raise Exception("场地：{}，日期：{}，时间：{}，无法预约".format(self.reservation_arena, self.reservation_date, self.reservation_time))
                     print_with_time("无法预约，刷新")
-                    sleep(1)
                     self.refresh_count -= 1
                     if self.refresh_count < 0:
                         return "next"
@@ -328,10 +325,19 @@ class AutoReservation:
                 img_block = self.driver.find_element(
                     By.CLASS_NAME, 'valid_bg-img'
                 )
-                print_with_time("验证码图片加载成功,time:"+ time.strftime("%H:%M:%S", time.localtime()))
+                print_with_time("验证码图片加载成功")
+                self.wait.until(
+                    lambda driver: img_block.get_dom_attribute('src') != '',
+                    message="验证码src属性加载超时",
+                )
+                self.wait.until(
+                    ExpectedCond.element_to_be_clickable((By.CLASS_NAME, 'valid_refresh')),
+                    message="验证码刷新按钮加载超时",
+                )
                 src = img_block.get_dom_attribute('src')
                 verifyPic_base64 = src.replace('data:image/jpg;base64,', '')
-            except:
+            except Exception as e:
+                print_with_time(e)
                 if self.img_refresh_count > 0:
                     print_with_time("刷新验证码1")
                     self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
@@ -343,9 +349,12 @@ class AutoReservation:
             recogResults = self.pass_capcha(verifyPic_base64)
             try:
                 target = self.driver.find_element(By.CLASS_NAME,"valid_tips__text")
-            except:
+            except Exception as e:
+                print_with_time(e)
                 print_with_time("字符串获取失败")
-            move = ActionChains(self.driver)
+            move = ActionChains(self.driver, 50)
+            
+
             img_block_size = img_block.size
             img_block_width = img_block_size['width']
             img_block_height = img_block_size['height']
@@ -356,29 +365,32 @@ class AutoReservation:
                     y_offset = recogResults[i]['Y坐标值']
                     # print_with_time(f"Clicking at: {x_offset}, {y_offset}")
                     # 点击时计算偏移量
-                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)-15).click().perform()
-
+                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)-15).click()
+                move.perform()
+                sleep(0.1)
                     # print_with_time(recogResults[i]['X坐标值'], recogResults[i]['Y坐标值'])
                     # move.move_to_element(img_block).move_by_offset(-160 + recogResults[i]['X坐标值'], -80 + recogResults[i]['Y坐标值'] ).click().perform()
             except Exception as e:
                 print_with_time(e)
                 pass
             
-            sleep(1)
             # 检查是否通过验证，验证码模式窗口class = valid_popup是否关闭，以及验证成功id = verify_result是否成功
-            isValidPopupClosed = self.driver.execute_script(
-                """
-                    return window.getComputedStyle(arguments[0]).getPropertyValue("display");
-                """,
-                self.driver.find_element(By.CLASS_NAME, 'valid_popup')
-            ) == 'none'
-            isVerifyResultShowed = self.driver.execute_script(
-                """
-                    return window.getComputedStyle(arguments[0]).getPropertyValue("display");
-                """,
-                self.driver.find_element(By.ID, 'verify_result')
-            ) == 'block'
-            if isValidPopupClosed and isVerifyResultShowed:
+            def custom_condition(driver):
+                isValidPopupClosed = driver.execute_script(
+                    """
+                        return window.getComputedStyle(arguments[0]).getPropertyValue("display");
+                    """,
+                    driver.find_element(By.CLASS_NAME, 'valid_popup')
+                ) == 'none'
+                isVerifyResultShowed = driver.execute_script(
+                    """
+                        return window.getComputedStyle(arguments[0]).getPropertyValue("display");
+                    """,
+                    driver.find_element(By.ID, 'verify_result')
+                ) == 'block'
+                return isValidPopupClosed and isVerifyResultShowed
+            try:
+                WebDriverWait(self.driver, 1).until(custom_condition, message="验证错误")
                 
                 submitBtn = self.driver.find_element(By.ID,'btn_sub')
                 submitBtn.click()
@@ -392,8 +404,6 @@ class AutoReservation:
                 else:
                     print_with_time("没有弹窗，直接过")
                 
-
-                print_with_time("{}_{} reservation success".format(res_date, ar.reservation_time))
                 # 创建邮件
                 msg = MIMEMultipart()
                 msg["Subject"] = "场地预约成功"
@@ -402,16 +412,19 @@ class AutoReservation:
                 body = "成功预约{}，时间为{}".format(self.reservation_arena, self.reservation_time)
                 msg.attach(MIMEText(body, "plain"))
                 self.res_msg(msg.as_string())
+                print_with_time(body)
                 break
-            else:
+            except Exception as e:
+                print_with_time(e)
                 # 刷新验证码
                 if self.img_refresh_count > 0:
                     print_with_time("刷新验证码2")
                     self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
-                    sleep(1)
+                    sleep(0.3)
                     self.img_refresh_count -= 1
                 else:
                     return
+
 
 
     def clean_up(self):
@@ -476,13 +489,11 @@ if __name__ == "__main__":
         ar.login()
         for reservation_time in reservation_times:
             ar.reservation_time = reservation_time
+            print_with_time("开始预约时间：{}".format(reservation_time))
             msg = ar.jump_to_confirm_page()
             if msg == "next":
                 continue
-            print_with_time("开始预约时间：{}".format(reservation_time))
             ar.pass_verification()  
 
     finally:
         ar.clean_up()
-
-
