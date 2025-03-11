@@ -315,7 +315,7 @@ class AutoReservation:
         # 如果识别结果长度不足，则直接点击切换验证码，
         # 如果点击完成后，提示验证失败，则重新识别并点击
         # 直到识别成功
-
+        prv_src = ''
         while True:
             try:
                 self.wait.until(
@@ -327,7 +327,7 @@ class AutoReservation:
                 )
                 print_with_time("验证码图片加载成功")
                 self.wait.until(
-                    lambda driver: img_block.get_dom_attribute('src') != '',
+                    lambda driver: img_block.get_dom_attribute('src') != prv_src and img_block.get_dom_attribute('src') != '',
                     message="验证码src属性加载超时",
                 )
                 self.wait.until(
@@ -335,6 +335,7 @@ class AutoReservation:
                     message="验证码刷新按钮加载超时",
                 )
                 src = img_block.get_dom_attribute('src')
+                prc_src = src
                 verifyPic_base64 = src.replace('data:image/jpg;base64,', '')
             except Exception as e:
                 print_with_time(e)
