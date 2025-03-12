@@ -51,7 +51,7 @@ class AutoReservation:
         self.driver.set_window_size(1920, 1080)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
-            timeout=5,
+            timeout=2,
         )
 
         self.action_chains = ActionChains(self.driver)
@@ -270,7 +270,6 @@ class AutoReservation:
                 # 判断reservationBtn是否有onClick属性
                 if reservationBtn.get_dom_attribute('onClick'):
                     # 可以预约
-                    sleep(0.3)
                     reservationBtn.click()
                     print_with_time("进入预约时间")
                     # 进入预约验证页面点击verify_button1
@@ -279,8 +278,7 @@ class AutoReservation:
                         message="预约页面加载超时"
                     )
                     verifyBtn.click()
-                    sleep(0.5)
-                    WebDriverWait(self.driver, 2).until(
+                    WebDriverWait(self.driver, 3).until(
                         ExpectedCond.presence_of_all_elements_located((By.CLASS_NAME, 'valid_bg-img')),
                         message="验证码图片加载超时1",
                     )
@@ -326,8 +324,13 @@ class AutoReservation:
                     By.CLASS_NAME, 'valid_bg-img'
                 )
                 print_with_time("验证码图片加载成功")
+                # 定义验证码src属性加载的条件
+                def captcha_src_loaded(driver):
+                    src = img_block.get_dom_attribute('src')
+                    return src is not None and src != '' and src != prv_src
+                # 等待验证码src属性加载
                 self.wait.until(
-                    lambda driver: img_block.get_dom_attribute('src') != prv_src and img_block.get_dom_attribute('src') != '',
+                    captcha_src_loaded,
                     message="验证码src属性加载超时",
                 )
                 self.wait.until(
@@ -335,7 +338,7 @@ class AutoReservation:
                     message="验证码刷新按钮加载超时",
                 )
                 src = img_block.get_dom_attribute('src')
-                prc_src = src
+                prv_src = src
                 verifyPic_base64 = src.replace('data:image/jpg;base64,', '')
             except Exception as e:
                 print_with_time(e)
@@ -347,13 +350,15 @@ class AutoReservation:
                 continue
 
             # recogResults: list = nn_service_request.nn_service_request(verifyPicWithCharTarget_base64)
+            print_with_time("开始识别")
             recogResults = self.pass_capcha(verifyPic_base64)
+            print_with_time("获得结果")
             try:
                 target = self.driver.find_element(By.CLASS_NAME,"valid_tips__text")
             except Exception as e:
                 print_with_time(e)
                 print_with_time("字符串获取失败")
-            move = ActionChains(self.driver, 50)
+            move = ActionChains(self.driver, 10)
             
 
             img_block_size = img_block.size
@@ -366,9 +371,8 @@ class AutoReservation:
                     y_offset = recogResults[i]['Y坐标值']
                     # print_with_time(f"Clicking at: {x_offset}, {y_offset}")
                     # 点击时计算偏移量
-                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)-15).click()
+                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)).click()
                 move.perform()
-                sleep(0.1)
                     # print_with_time(recogResults[i]['X坐标值'], recogResults[i]['Y坐标值'])
                     # move.move_to_element(img_block).move_by_offset(-160 + recogResults[i]['X坐标值'], -80 + recogResults[i]['Y坐标值'] ).click().perform()
             except Exception as e:
@@ -498,3 +502,4 @@ if __name__ == "__main__":
 
     finally:
         ar.clean_up()
+
