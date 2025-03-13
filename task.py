@@ -19,13 +19,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import sys
 
-
 import requests
 
 res_date = datetime.datetime.now() + datetime.timedelta(days=2)
 
 def print_with_time(msg):
-    print("[{}] {}".format(time.strftime("%H:%M:%S", time.localtime()), msg))
+    #写入到日志文件
+    with open("log.txt", "a") as f:
+        f.write("[{}] {}\n".format(time.strftime("%H:%M:%S", time.localtime()), msg))
+    # print("[{}] {}".format(time.strftime("%H:%M:%S", time.localtime()), msg))
 
 class AutoReservation:
     def __init__(
@@ -38,6 +40,7 @@ class AutoReservation:
             
             capcha_username: str = None,
             capcha_password: str = None,
+            yunma_token: str = None,
             receive_email: str = None,
             send_email: str = None,
             send_email_key: str = None,
@@ -51,7 +54,7 @@ class AutoReservation:
         self.driver.set_window_size(1920, 1080)
         self.wait: WebDriverWait = WebDriverWait(
             self.driver,
-            timeout=2,
+            timeout=3.5,
         )
 
         self.action_chains = ActionChains(self.driver)
@@ -71,6 +74,7 @@ class AutoReservation:
 
         self.capcha_username = capcha_username
         self.capcha_password = capcha_password
+        self.yunma_token = yunma_token
         self.receive_email = receive_email
         self.send_email = send_email
         self.send_email_key = send_email_key
@@ -92,14 +96,14 @@ class AutoReservation:
 
     def login(self):
         # 创建邮件
-        msg = MIMEMultipart()
-        msg["Subject"] = "羽毛球场地预约开始"
+        # msg = MIMEMultipart()
+        # msg["Subject"] = "羽毛球场地预约开始"
 
         # 邮件正文
-        body = "登录成功, 开始预约"+self.reservation_arena+"，预约时间为"+self.reservation_time
-        msg.attach(MIMEText(body, "plain"))
+        # body = "登录成功, 开始预约"+self.reservation_arena+"，预约时间为"+self.reservation_time
+        # msg.attach(MIMEText(body, "plain"))
 
-        self.res_msg(msg.as_string())
+        # self.res_msg(msg.as_string())
         # 访问登录页面，点击”校内登录“按钮，等待页面跳转
         self.driver.get(r'https://elife.fudan.edu.cn/login.jsp')
         self.wait.until(
@@ -241,32 +245,37 @@ class AutoReservation:
                         break       
 
                 sleep(0.2)
-            
+
+                try:
+                    reservationBtn = self.driver.find_element(
+                        by=By.XPATH,
+                        value='//font[contains(text(), "{}")]'.format(self.reservation_time)
+                    ).find_element(
+                        By.XPATH,
+                        value='../../td[contains(@align, "right")]//img')
+                    # 判断是否有空场
+                    nums = reservationBtn.find_element(
+                        By.XPATH,
+                        value='../../td[contains(@class, "site_td4")]'
+                    )
+                    self.reserved = int(nums.find_element(
+                        By.TAG_NAME,
+                        'font'
+                    ).text)
+                    print_with_time("已预约人数：{}".format(self.reserved))
+                    self.total = int(nums.find_element(
+                        By.TAG_NAME,
+                        'span'
+                    ).text)
+                    print_with_time("总容量：{}".format(self.total))
+                    if self.reserved == self.total:
+                        print_with_time("场地：{}，日期：{}，时间：{}，已满".format(self.reservation_arena, self.reservation_date, self.reservation_time))
+                        return "next"
+                except Exception as e:
+                    print_with_time(e)
+                    return "end"
                 # 查找预约时间，判断是否可以预约
-                reservationBtn = self.driver.find_element(
-                    by=By.XPATH,
-                    value='//font[contains(text(), "{}")]'.format(self.reservation_time)
-                ).find_element(
-                    By.XPATH,
-                    value='../../td[contains(@align, "right")]//img')
-                # 判断是否有空场
-                nums = reservationBtn.find_element(
-                    By.XPATH,
-                    value='../../td[contains(@class, "site_td4")]'
-                )
-                self.reserved = int(nums.find_element(
-                    By.TAG_NAME,
-                    'font'
-                ).text)
-                print_with_time("已预约人数：{}".format(self.reserved))
-                self.total = int(nums.find_element(
-                    By.TAG_NAME,
-                    'span'
-                ).text)
-                print_with_time("总容量：{}".format(self.total))
-                if self.reserved == self.total:
-                    print_with_time("场地：{}，日期：{}，时间：{}，已满".format(self.reservation_arena, self.reservation_date, self.reservation_time))
-                    return "next"
+
                 # 判断reservationBtn是否有onClick属性
                 if reservationBtn.get_dom_attribute('onClick'):
                     # 可以预约
@@ -279,7 +288,7 @@ class AutoReservation:
                     )
                     verifyBtn.click()
                     WebDriverWait(self.driver, 3).until(
-                        ExpectedCond.presence_of_all_elements_located((By.CLASS_NAME, 'valid_bg-img')),
+                        ExpectedCond.presence_of_element_located((By.CLASS_NAME, 'valid_bg-img')),
                         message="验证码图片加载超时1",
                     )
                     break
@@ -344,35 +353,54 @@ class AutoReservation:
                 print_with_time(e)
                 if self.img_refresh_count > 0:
                     print_with_time("刷新验证码1")
+
                     self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
                     sleep(0.5)
                     self.img_refresh_count -= 1
                 continue
 
-            # recogResults: list = nn_service_request.nn_service_request(verifyPicWithCharTarget_base64)
-            print_with_time("开始识别")
-            recogResults = self.pass_capcha(verifyPic_base64)
-            print_with_time("获得结果")
+            # btime = time.time()
+            # recogResults = self.pass_capcha(verifyPic_base64)
+            # etime = time.time()
+            # print_with_time("识别时间：{}".format(etime-btime))
             try:
                 target = self.driver.find_element(By.CLASS_NAME,"valid_tips__text")
+                target_text = target.text
+                extra = target_text[6]+','+ target_text[7]+','+target_text[8]+','+target_text[9]
             except Exception as e:
                 print_with_time(e)
                 print_with_time("字符串获取失败")
-            move = ActionChains(self.driver, 10)
-            
+                if self.img_refresh_count > 0:
+                    print_with_time("刷新验证码3")
+                    self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
+                    sleep(0.5)
+                    self.img_refresh_count -= 1
+                continue
+
+
+            try:
+                btime = time.time()
+                r = self.verifyy(verifyPic_base64, extra)
+                etime = time.time()
+                print_with_time("识别时间：{}".format(etime-btime))
+                r = r['data']['data'].split('|')
+            except Exception as e:
+                print_with_time(e)
+                print_with_time("识别失败")
 
             img_block_size = img_block.size
             img_block_width = img_block_size['width']
             img_block_height = img_block_size['height']
-
+            move = ActionChains(self.driver, 20)
             try:
-                for i in target.text[6:10]:
-                    x_offset = recogResults[i]['X坐标值']
-                    y_offset = recogResults[i]['Y坐标值']
+                for i in r:
+                    x_offset = int(i.split(',')[0])
+                    y_offset = int(i.split(',')[1])
+                    # x_offset = recogResults[i]['X坐标值']
+                    # y_offset = recogResults[i]['Y坐标值']
                     # print_with_time(f"Clicking at: {x_offset}, {y_offset}")
                     # 点击时计算偏移量
-                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)).click()
-                move.perform()
+                    move.move_to_element(img_block).move_by_offset(x_offset - (img_block_width / 2), y_offset - (img_block_height / 2)).click().perform()
                     # print_with_time(recogResults[i]['X坐标值'], recogResults[i]['Y坐标值'])
                     # move.move_to_element(img_block).move_by_offset(-160 + recogResults[i]['X坐标值'], -80 + recogResults[i]['Y坐标值'] ).click().perform()
             except Exception as e:
@@ -415,8 +443,8 @@ class AutoReservation:
 
                 # 邮件正文
                 body = "成功预约{}，时间为{}".format(self.reservation_arena, self.reservation_time)
-                msg.attach(MIMEText(body, "plain"))
-                self.res_msg(msg.as_string())
+                #msg.attach(MIMEText(body, "plain"))
+                #self.res_msg(msg.as_string())
                 print_with_time(body)
                 break
             except Exception as e:
@@ -424,7 +452,7 @@ class AutoReservation:
                 # 刷新验证码
                 if self.img_refresh_count > 0:
                     print_with_time("刷新验证码2")
-                    self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
+                    #self.driver.find_element(By.CLASS_NAME, 'valid_refresh').click()
                     sleep(0.3)
                     self.img_refresh_count -= 1
                 else:
@@ -459,6 +487,21 @@ class AutoReservation:
             connection.sendmail(YOUR_EMAIL, EMAILS, message)
         finally:
             connection.quit()
+
+    def verifyy(self, s:str, target:str) -> str:
+        url = "http://api.jfbym.com/api/YmServer/customApi"
+        data = {
+            ## 关于参数,一般来说有3个;不同类型id可能有不同的参数个数和参数名,找客服获取
+            "token": self.yunma_token,
+            "type": "300010",
+            "image": s,
+            "extra": target
+        }
+        _headers = {
+            "Content-Type": "application/json"
+        }
+        response = requests.request("POST", url, headers=_headers, json=data).json()
+        return response
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -469,6 +512,7 @@ if __name__ == "__main__":
     parser.add_argument("--reservation-arena", type=str, help="预约场地")
     parser.add_argument("--capcha-username", type=str, help="验证码识别服务用户名")
     parser.add_argument("--capcha-password", type=str, help="验证码识别服务密码")
+    parser.add_argument("--yunma-token", type=str, help="云码token")
     parser.add_argument("--receive-email", type=str, help="接收邮件地址")
     parser.add_argument("--send-email-key", type=str, help="发送邮件密钥")
     parser.add_argument("--send-email", type=str, help="发送邮件地址")
@@ -484,6 +528,7 @@ if __name__ == "__main__":
         args.reservation_arena,
         args.capcha_username,
         args.capcha_password,
+        args.yunma_token,
         args.receive_email,
         args.send_email,
         args.send_email_key
@@ -501,5 +546,16 @@ if __name__ == "__main__":
             ar.pass_verification()  
 
     finally:
+        # 读取文件内容
+        with open('log.txt', 'r') as f:
+            content = f.read()
+            # 创建邮件
+            msg = MIMEMultipart()
+            msg["Subject"] = "羽毛球场地预约结束"
+            # 邮件正文
+            body = content
+            msg.attach(MIMEText(body, "plain"))
+            ar.res_msg(msg.as_string())
+
         ar.clean_up()
 
